@@ -61282,6 +61282,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: MARAUDER
       objectReference: {fileID: 0}
+    - target: {fileID: 1378908736630644852, guid: 4973ad168a7727f479f15c5a12689dd7,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1378908736630644879, guid: 4973ad168a7727f479f15c5a12689dd7,
         type: 3}
       propertyPath: m_LocalPosition.x

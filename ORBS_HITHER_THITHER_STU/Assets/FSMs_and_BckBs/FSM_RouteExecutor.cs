@@ -34,7 +34,8 @@ namespace FSM
 
         public override void Exit()
         {
-            pathFollowing.enabled = false;
+            //Modificación de SESA... QUE FEM?
+            if(pathFollowing != null) pathFollowing.enabled = false;
             target = null;
             path = null;
             base.Exit();

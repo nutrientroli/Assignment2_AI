@@ -24,6 +24,7 @@ public class FSM_WANDER : FiniteStateMachine
 
     private void Awake()
     {
+
         nodeExecutor = GetComponent<FSM_RouteExecutor>();
         nodeExecutor.enabled = false;
         nodeExecutor.targetReachedRadius = targetReachedDistance;
