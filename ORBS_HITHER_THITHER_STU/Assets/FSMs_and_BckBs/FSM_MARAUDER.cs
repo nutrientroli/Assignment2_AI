@@ -27,6 +27,7 @@ public class FSM_MARAUDER : FiniteStateMachine
     [SerializeField] private GameObject surrogateTarget;       // not in use at this stage
     private GameObject orbe_obj;
     private GameObject bearer_obj;
+    private KinematicState bearer_ks;
 
     [Header("Pursue Behaviour")]
     [SerializeField] private float distanceAhead = 20f;      // distance in front of the target we will try to reach
@@ -103,9 +104,8 @@ public class FSM_MARAUDER : FiniteStateMachine
             case (State.SEEKING_BEARER):
                 // EXPERIMENTAL --------------------------------------------------------------------------- //
                 // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
-                KinematicState _bearer_Ks = bearer_obj.GetComponent<KinematicState>();
                 Vector3 displacement_delta;
-                displacement_delta = _bearer_Ks.linearVelocity * distanceAhead * Time.deltaTime;
+                displacement_delta = bearer_ks.linearVelocity * distanceAhead * Time.deltaTime;
                 surrogateTarget.transform.position = bearer_obj.transform.position + displacement_delta;
                 Debug.DrawLine(this.transform.position, surrogateTarget.transform.position, Color.red);
                 // ----------------------------------------------------------------------------------------- //
@@ -152,6 +152,8 @@ public class FSM_MARAUDER : FiniteStateMachine
                 routeExecutor.Exit();
                 break;
             case (State.SEEKING_BEARER):
+                bearer_ks = null;
+
                 currentTarget = null;
                 routeExecutor.repathTime = 0f;
                 routeExecutor.Exit();
@@ -174,6 +176,9 @@ public class FSM_MARAUDER : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case (State.SEEKING_BEARER):
+
+                bearer_ks = bearer_obj.GetComponent<KinematicState>();
+
                 currentTarget = surrogateTarget;
                 routeExecutor.target = currentTarget;
                 routeExecutor.repathTime = repathTime;
