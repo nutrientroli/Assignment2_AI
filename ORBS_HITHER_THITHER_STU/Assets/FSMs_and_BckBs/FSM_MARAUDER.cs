@@ -102,13 +102,10 @@ public class FSM_MARAUDER : FiniteStateMachine
                 }
                 break;
             case (State.SEEKING_BEARER):
-                // EXPERIMENTAL --------------------------------------------------------------------------- //
                 // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
-                Vector3 displacement_delta;
-                displacement_delta = bearer_ks.linearVelocity * distanceAhead * Time.deltaTime;
+                Vector3 displacement_delta = bearer_ks.linearVelocity * distanceAhead * Time.deltaTime;
                 surrogateTarget.transform.position = bearer_obj.transform.position + displacement_delta;
                 Debug.DrawLine(this.transform.position, surrogateTarget.transform.position, Color.red);
-                // ----------------------------------------------------------------------------------------- //
                 
                 // Does the bearer still have the orbe with him? if not, ignore him
                 if (bearer_obj == null || bearer_obj.tag == blackboard.bearerWithoutOrbe_Tag) {
