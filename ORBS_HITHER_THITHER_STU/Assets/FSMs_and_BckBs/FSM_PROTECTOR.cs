@@ -26,7 +26,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
     [SerializeField] private GameObject currentTarget;
     [SerializeField] private GameObject surrogateTarget;
     private GameObject orbe_obj;
-    private GameObject marauder_obj;
+    public GameObject marauder_obj;
     private KinematicState maraurer_ks;
 
     [Header("Pursue Behaviour")]
@@ -39,10 +39,10 @@ public class FSM_PROTECTOR : FiniteStateMachine
         routeExecutor = GetComponent<FSM_RouteExecutor>();
         wander = GetComponent<FSM_WANDER>();
 
-        wander.wanderPoints_Ar = GameObject.FindGameObjectsWithTag("NORMAL_WP");
-        blackboard.baseWayPoints_Arr = GameObject.FindGameObjectsWithTag("SOUTH_DELIVERY");
-        blackboard.killingWayPoints_Arr = GameObject.FindGameObjectsWithTag("MARAUDER_KILLING");
-        surrogateTarget = GameObject.Find("surrogateTarget");
+        wander.wanderPoints_Ar = GameObject.FindGameObjectsWithTag(blackboard.wanderPoints_Tag);
+        blackboard.baseWayPoints_Arr = GameObject.FindGameObjectsWithTag(blackboard.basePoints_Tag);
+        blackboard.killingWayPoints_Arr = GameObject.FindGameObjectsWithTag(blackboard.kill_Tag);
+        surrogateTarget = GameObject.Find(blackboard.surrogate_Tag);
 
         routeExecutor.enabled = false;
         wander.enabled = false;
@@ -110,10 +110,16 @@ public class FSM_PROTECTOR : FiniteStateMachine
             case State.SEEKING_MARAUDER:
                 
                 // Does the marauder still have the orbe with him? if not, ignore him
-                if (marauder_obj == null) {
+                if (marauder_obj == null || marauder_obj.tag != blackboard.marauder_Tag) {
                     ChangeState(State.WANDERING);
                     break;
                 }
+
+                if (routeExecutor.currentState == FSM_RouteExecutor.State.TERMINATED && marauder_obj.tag == blackboard.marauder_Tag) {
+                    ChangeState(State.SEEKING_MARAUDER);
+                    break;
+                }
+
                 // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
                 Vector3 displacement_delta = maraurer_ks.linearVelocity * distanceAhead * Time.deltaTime;
                 surrogateTarget.transform.position = maraurer_ks.transform.position + displacement_delta;
@@ -128,11 +134,6 @@ public class FSM_PROTECTOR : FiniteStateMachine
                     break;
                 }
 
-                if (marauder_obj.tag == blackboard.marauderCaught_Tag)
-                {
-                    ChangeState(State.WANDERING);
-                    break;
-                }
                 break;
             case State.TRANSPORTING_ORBE:
                 // Is there a marauder on sight? If so we relase the orb and we try to kill him
@@ -146,7 +147,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 // Did we arrive to the relase point?
                 if (SensingUtils.DistanceToTarget(this.gameObject, currentTarget) <= blackboard.deliveryPointReachedRadius)
                 {
-                    blackboard.DropOrb(orbe_obj, true);          // base drop
+                    blackboard.DropOrb(orbe_obj, true, currentTarget);          // base drop
                     ChangeState(State.WANDERING);
                     break;
                 }
@@ -221,6 +222,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case State.KILLING_MARAUDER:
+                marauder_obj.GetComponent<FSM_MARAUDER>().BeCaught();
                 currentTarget = blackboard.GetRandomKillingPoint();
                 routeExecutor.target = currentTarget;
                 routeExecutor.ReEnter();

@@ -191,6 +191,10 @@ MonoBehaviour:
   storeOrb_Tag: STORED_ORB
   marauder_Tag: MARAUDER
   marauderCaught_Tag: MARAUDER_CAUGHT
+  basePoints_Tag: SOUTH_DELIVERY
+  wanderPoints_Tag: NORMAL_WP
+  surrogate_Tag: surrogateTarget
+  kill_Tag: MARAUDER_KILLING
   orbDetectionRadius: 200
   orbReachedRadius: 2
   deliveryPointReachedRadius: 3
@@ -230,6 +234,7 @@ MonoBehaviour:
   currentState: 0
   currentTarget: {fileID: 0}
   surrogateTarget: {fileID: 0}
+  marauder_obj: {fileID: 0}
   distanceAhead: 20
   repathTime: 0.2
 --- !u!114 &5891089339891235483

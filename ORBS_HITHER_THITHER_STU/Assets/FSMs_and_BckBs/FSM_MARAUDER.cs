@@ -25,7 +25,7 @@ public class FSM_MARAUDER : FiniteStateMachine
     [SerializeField] private State currentState;
 
     [SerializeField] private GameObject currentTarget;
-    [SerializeField] private GameObject surrogateTarget;       // not in use at this stage
+    [SerializeField] private GameObject surrogateTarget;
     private GameObject orbe_obj;
     private GameObject bearer_obj;
     private KinematicState bearer_ks;
@@ -42,9 +42,9 @@ public class FSM_MARAUDER : FiniteStateMachine
         routeExecutor = GetComponent<FSM_RouteExecutor>();
         wander = GetComponent<FSM_WANDER>();
 
-        wander.wanderPoints_Ar = GameObject.FindGameObjectsWithTag("NORMAL_WP");
-        blackboard.baseWayPoints_Arr = GameObject.FindGameObjectsWithTag("NORTH_DELIVERY");
-        surrogateTarget = GameObject.Find("surrogateTarget");
+        wander.wanderPoints_Ar = GameObject.FindGameObjectsWithTag(blackboard.wanderPoints_Tag);
+        blackboard.baseWayPoints_Arr = GameObject.FindGameObjectsWithTag(blackboard.basePoints_Tag);
+        surrogateTarget = GameObject.Find(blackboard.surrogate_Tag);
 
         routeExecutor.enabled = false;
         wander.enabled = false;
@@ -76,7 +76,7 @@ public class FSM_MARAUDER : FiniteStateMachine
                     break;
                 }
                 // IS A BEARER ON SIGHT (HIGHER PRIORITY THAN ORBS)
-                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
+                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithOrbe_Tag, blackboard.bearerDetectionRadius);
 
                 //Debug.LogError(gameObject.name + " ::: ");
                 if (!ReferenceEquals(bearer_obj, null)) {
@@ -97,7 +97,7 @@ public class FSM_MARAUDER : FiniteStateMachine
                     break;
                 }
                 // Is there any bearer on sight? If so, go and get him!
-                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
+                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithOrbe_Tag, blackboard.bearerDetectionRadius);
                 if (!ReferenceEquals(bearer_obj, null)) {
                     ChangeState(State.SEEKING_BEARER);
                     break;
@@ -119,6 +119,12 @@ public class FSM_MARAUDER : FiniteStateMachine
                 //check if dead
                 if (dying) {
                     ChangeState(State.DYING);
+                    break;
+                }
+
+                if (routeExecutor.currentState == FSM_RouteExecutor.State.TERMINATED && bearer_obj.tag == blackboard.bearerWithOrbe_Tag)
+                {
+                    ChangeState(State.SEEKING_BEARER);
                     break;
                 }
                 // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
@@ -145,7 +151,7 @@ public class FSM_MARAUDER : FiniteStateMachine
                     break;
                 }
                 // Is there a bearer on sight? If so we relase the orb and we try to kill him
-                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
+                bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithOrbe_Tag, blackboard.bearerDetectionRadius);
                 if (!ReferenceEquals(bearer_obj, null)) {
                     blackboard.DropOrb(orbe_obj, false);        // normal drop
                     ChangeState(State.SEEKING_BEARER);
@@ -153,7 +159,7 @@ public class FSM_MARAUDER : FiniteStateMachine
                 }
                 // Did we arrive to the relase point?
                 if (SensingUtils.DistanceToTarget(this.gameObject,currentTarget) <= blackboard.deliveryPointReachedRadius) {
-                    blackboard.DropOrb(orbe_obj, true);          // base drop
+                    blackboard.DropOrb(orbe_obj, true, currentTarget);          // base drop
                     ChangeState(State.WANDERING);
                     break;
                 }
@@ -161,7 +167,6 @@ public class FSM_MARAUDER : FiniteStateMachine
             case (State.DYING):
                 if (elapsedTime >= blackboard.vanishTime)
                 {
-                    // if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
                     Destroy(gameObject);
                     break;
                 }
@@ -232,5 +237,10 @@ public class FSM_MARAUDER : FiniteStateMachine
     {
         if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
         this.dying = true;
+    }
+
+    public void BeCaught()
+    {
+        if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
     }
 }

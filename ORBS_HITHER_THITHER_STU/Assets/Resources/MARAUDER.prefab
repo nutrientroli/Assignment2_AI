@@ -123,14 +123,18 @@ MonoBehaviour:
   freeOrb_Tag: FREE_ORB
   claimedOrb_Tag: CARRIED_ORB
   storeOrb_Tag: STORED_ORB
-  bearerWithoutOrbe: BEARER_WITH_ORB
   bearerWithoutOrbe_Tag: BEARER_WITHOUT_ORB
+  bearerWithOrbe_Tag: BEARER_WITH_ORB
+  basePoints_Tag: NORTH_DELIVERY
+  wanderPoints_Tag: NORMAL_WP
+  surrogate_Tag: surrogateTarget
   bearerDetectionRadius: 100
   bearerReachedRadius: 6
   orbDetectionRadius: 50
   orbReachedRadius: 2
   deliveryPointReachedRadius: 3
   loakAheadDistance: 10
+  vanishTime: 3
   baseWayPoints_Arr:
   - {fileID: 0}
   - {fileID: 0}

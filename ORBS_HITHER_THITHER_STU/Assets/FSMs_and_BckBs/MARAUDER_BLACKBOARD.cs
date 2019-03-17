@@ -5,18 +5,19 @@ using Steerings;
 // Daniel Moreno
 public class MARAUDER_BLACKBOARD : MonoBehaviour
 {
-
-    /* COMPLETE */
     // orb
     [Header("Tags")]
     public string freeOrb_Tag;
     public string claimedOrb_Tag;
     public string storeOrb_Tag;
     // bearer
-    public string bearerWithoutOrbe;
     public string bearerWithoutOrbe_Tag;
+    public string bearerWithOrbe_Tag;
+    //Points
+    public string basePoints_Tag;
+    public string wanderPoints_Tag;
+    public string surrogate_Tag;
 
-    public float vanishTime = 3;
 
     [Header("Control")]
     public float bearerDetectionRadius = 100;
@@ -25,30 +26,21 @@ public class MARAUDER_BLACKBOARD : MonoBehaviour
     public float orbReachedRadius = 2;
     public float deliveryPointReachedRadius = 3;
     public float loakAheadDistance = 10;
+    public float vanishTime = 3;
 
     // listas
     [Header("Waypoint Arrays")]
     public GameObject[] baseWayPoints_Arr;
-
          
-    void Awake()
-    {
-        // Delete if not necesary
-        if (baseWayPoints_Arr.Length == 0)
-            Debug.LogError("There is no nodes set to the baseWaypoints of " + gameObject);
-    }
-
-
-    public void DropOrb (GameObject orb, bool _onBase = false)
+    public void DropOrb(GameObject orb, bool _onBase = false, GameObject basepoint = null)
     {
         orb.transform.parent = null;
 
-        if (_onBase)
+        if (_onBase) {
             orb.tag = storeOrb_Tag;
-        else
-            orb.tag = "FREE_ORB";
-
-        Debug.LogError( this.gameObject.name + " " + orb.transform.tag);
+            if (basepoint == null || SensingUtils.DistanceToTarget(orb, basepoint) > deliveryPointReachedRadius + 1) orb.tag = freeOrb_Tag;
+        }
+        else orb.tag = freeOrb_Tag;
 
         GraphNode node = AstarPath.active.GetNearest(orb.transform.position, NNConstraint.Default).node;
         orb.transform.position = (Vector3)node.position;
@@ -69,11 +61,8 @@ public class MARAUDER_BLACKBOARD : MonoBehaviour
     {
         GameObject _object;
         int _randomIndex;
-
         _randomIndex = Random.Range(0, _inputArray.Length);
-
         _object = _inputArray[_randomIndex];
-
         return _object;
     }
 
