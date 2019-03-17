@@ -1,4 +1,5 @@
 ﻿using FSM;
+using Steerings;
 using UnityEngine;
 using Pathfinding;
 
@@ -26,6 +27,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
     [SerializeField] private GameObject surrogateTarget;
     private GameObject orbe_obj;
     private GameObject marauder_obj;
+    private KinematicState maraurer_ks;
 
     [Header("Pursue Behaviour")]
     [SerializeField] private float distanceAhead = 20f;      // distance in front of the target we will try to reach
@@ -39,6 +41,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
 
         wander.wanderPoints_Ar = GameObject.FindGameObjectsWithTag("NORMAL_WP");
         blackboard.baseWayPoints_Arr = GameObject.FindGameObjectsWithTag("SOUTH_DELIVERY");
+        blackboard.killingWayPoints_Arr = GameObject.FindGameObjectsWithTag("MARAUDER_KILLING");
         surrogateTarget = GameObject.Find("surrogateTarget");
 
         routeExecutor.enabled = false;
@@ -69,7 +72,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 ChangeState(State.WANDERING);
                 break;
             case State.WANDERING:
-                // IS A BEARER ON SIGHT (HIGHER PRIORITY THAN ORBS)
+                // IS A MARAUDER ON SIGHT (HIGHER PRIORITY THAN ORBS)
                 marauder_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.marauder_Tag, blackboard.marauderDetectionRadius);
                 if (!ReferenceEquals(marauder_obj, null)) {
                     ChangeState(State.SEEKING_MARAUDER);
@@ -83,13 +86,13 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 }
                 break;
             case State.SEEKING_ORBE:
-                // Is there any bearer on sight? If so, go and get him!
+                // Is there any marauder on sight? If so, go and get him!
                 marauder_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.marauder_Tag, blackboard.marauderDetectionRadius);
                 if (!ReferenceEquals(marauder_obj, null)) {
                     ChangeState(State.SEEKING_MARAUDER);
                     break;
                 }
-                // No bearer on sight? Get to the current target if it is STILL being a free orbe
+                // No marauder on sight? Get to the current target if it is STILL being a free orbe
                 // on the premnises of the orb
                 if (orbe_obj.tag == blackboard.freeOrb_Tag && SensingUtils.DistanceToTarget(this.gameObject, currentTarget) <= blackboard.orbReachedRadius)
                 {
@@ -106,20 +109,33 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 break;
             case State.SEEKING_MARAUDER:
                 
-                // Does the bearer still have the orbe with him? if not, ignore him
+                // Does the marauder still have the orbe with him? if not, ignore him
                 if (marauder_obj == null) {
                     ChangeState(State.WANDERING);
                     break;
                 }
-                // if we are close enought to the bearer we ... KILL HIM! 
+                // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
+                Vector3 displacement_delta = maraurer_ks.linearVelocity * distanceAhead * Time.deltaTime;
+                surrogateTarget.transform.position = maraurer_ks.transform.position + displacement_delta;
+                Debug.DrawLine(this.transform.position, surrogateTarget.transform.position, Color.red);
+
+                // if we are close enought to the marauder we take him 
                 if (SensingUtils.DistanceToTarget(this.gameObject, marauder_obj) <= blackboard.marauderReachedRadius)
                 {
+                    marauder_obj.GetComponent<FSM_MARAUDER>().Exit();
+                    blackboard.GrabMarauder(marauder_obj, transform);
                     ChangeState(State.KILLING_MARAUDER);
+                    break;
+                }
+
+                if (marauder_obj.tag == blackboard.marauderCaught_Tag)
+                {
+                    ChangeState(State.WANDERING);
                     break;
                 }
                 break;
             case State.TRANSPORTING_ORBE:
-                // Is there a bearer on sight? If so we relase the orb and we try to kill him
+                // Is there a marauder on sight? If so we relase the orb and we try to kill him
                 marauder_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.marauder_Tag, blackboard.marauderDetectionRadius);
                 if (!ReferenceEquals(marauder_obj, null))
                 {
@@ -136,7 +152,17 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 }
                 break;
             case State.KILLING_MARAUDER:
-                //To DO
+                // Has de marauder reached the killing point?
+                if (SensingUtils.DistanceToTarget(this.gameObject, currentTarget) <= blackboard.killingPointReachedRadius)
+                {
+                    if (marauder_obj != null)
+                    {
+                        marauder_obj.GetComponent<FSM_MARAUDER>().ReEnter();
+                        marauder_obj.GetComponent<FSM_MARAUDER>().BeKilled();
+                        blackboard.DropMarauder(marauder_obj);
+                    }
+                    ChangeState(State.WANDERING);
+                }
                 break;
         }
     }
@@ -155,6 +181,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 routeExecutor.Exit();
                 break;
             case (State.SEEKING_MARAUDER):
+                maraurer_ks = null;
                 currentTarget = null;
                 routeExecutor.repathTime = 0f;
                 routeExecutor.Exit();
@@ -164,7 +191,8 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 routeExecutor.Exit();
                 break;
             case (State.KILLING_MARAUDER):
-                //TO DO
+                currentTarget = null;
+                routeExecutor.Exit();
                 break;
         }
 
@@ -181,6 +209,7 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case (State.SEEKING_MARAUDER):
+                maraurer_ks = marauder_obj.GetComponent<KinematicState>();
                 currentTarget = surrogateTarget;
                 routeExecutor.target = currentTarget;
                 routeExecutor.repathTime = repathTime;
@@ -192,7 +221,9 @@ public class FSM_PROTECTOR : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case State.KILLING_MARAUDER:
-                //TO DO
+                currentTarget = blackboard.GetRandomKillingPoint();
+                routeExecutor.target = currentTarget;
+                routeExecutor.ReEnter();
                 break;
         }
         currentState = _nextState;

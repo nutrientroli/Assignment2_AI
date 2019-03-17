@@ -19,7 +19,8 @@ public class FSM_MARAUDER : FiniteStateMachine
         WANDERING,
         SEEKING_ORBE,
         SEEKING_BEARER,
-        TRANSPORTING_ORBE
+        TRANSPORTING_ORBE,
+        DYING
     }
     [SerializeField] private State currentState;
 
@@ -28,6 +29,9 @@ public class FSM_MARAUDER : FiniteStateMachine
     private GameObject orbe_obj;
     private GameObject bearer_obj;
     private KinematicState bearer_ks;
+
+    private float elapsedTime;
+    private bool dying;
 
     [Header("Pursue Behaviour")]
     [SerializeField] private float distanceAhead = 20f;      // distance in front of the target we will try to reach
@@ -66,6 +70,11 @@ public class FSM_MARAUDER : FiniteStateMachine
                 ChangeState(State.WANDERING);
                 break;
             case (State.WANDERING):
+                //check if dead
+                if (dying) {
+                    ChangeState(State.DYING);
+                    break;
+                }
                 // IS A BEARER ON SIGHT (HIGHER PRIORITY THAN ORBS)
                 bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
 
@@ -82,6 +91,11 @@ public class FSM_MARAUDER : FiniteStateMachine
                 }
                 break;
             case (State.SEEKING_ORBE):
+                //check if dead
+                if (dying) {
+                    ChangeState(State.DYING);
+                    break;
+                }
                 // Is there any bearer on sight? If so, go and get him!
                 bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
                 if (!ReferenceEquals(bearer_obj, null)) {
@@ -102,6 +116,11 @@ public class FSM_MARAUDER : FiniteStateMachine
                 }
                 break;
             case (State.SEEKING_BEARER):
+                //check if dead
+                if (dying) {
+                    ChangeState(State.DYING);
+                    break;
+                }
                 // update the position of the surrogated target in order to "pursue" the enemy on a more clever way (still not clever at all)
                 Vector3 displacement_delta = bearer_ks.linearVelocity * distanceAhead * Time.deltaTime;
                 surrogateTarget.transform.position = bearer_obj.transform.position + displacement_delta;
@@ -120,6 +139,11 @@ public class FSM_MARAUDER : FiniteStateMachine
                 }
                 break;
             case (State.TRANSPORTING_ORBE):
+                //check if dead
+                if (dying) {
+                    ChangeState(State.DYING);
+                    break;
+                }
                 // Is there a bearer on sight? If so we relase the orb and we try to kill him
                 bearer_obj = SensingUtils.FindInstanceWithinRadius(this.gameObject, blackboard.bearerWithoutOrbe, blackboard.bearerDetectionRadius);
                 if (!ReferenceEquals(bearer_obj, null)) {
@@ -133,6 +157,16 @@ public class FSM_MARAUDER : FiniteStateMachine
                     ChangeState(State.WANDERING);
                     break;
                 }
+                break;
+            case (State.DYING):
+                if (elapsedTime >= blackboard.vanishTime)
+                {
+                    if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
+                    Destroy(gameObject);
+                    break;
+                }
+                gameObject.transform.localScale /= 1.005f;
+                elapsedTime = elapsedTime + Time.deltaTime;
                 break;
         }
     }
@@ -150,7 +184,6 @@ public class FSM_MARAUDER : FiniteStateMachine
                 break;
             case (State.SEEKING_BEARER):
                 bearer_ks = null;
-
                 currentTarget = null;
                 routeExecutor.repathTime = 0f;
                 routeExecutor.Exit();
@@ -158,6 +191,8 @@ public class FSM_MARAUDER : FiniteStateMachine
             case (State.TRANSPORTING_ORBE):
                 currentTarget = null;
                 routeExecutor.Exit();
+                break;
+            case (State.DYING):
                 break;
         }
 
@@ -173,9 +208,7 @@ public class FSM_MARAUDER : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case (State.SEEKING_BEARER):
-
                 bearer_ks = bearer_obj.GetComponent<KinematicState>();
-
                 currentTarget = surrogateTarget;
                 routeExecutor.target = currentTarget;
                 routeExecutor.repathTime = repathTime;
@@ -186,7 +219,16 @@ public class FSM_MARAUDER : FiniteStateMachine
                 routeExecutor.target = currentTarget;
                 routeExecutor.ReEnter();
                 break;
+            case (State.DYING):
+                elapsedTime = 0f;
+                break;
         }
         currentState = _nextState;
+    }
+
+    public void BeKilled()
+    {
+        if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
+        this.dying = true;
     }
 }

@@ -15,9 +15,14 @@ GameObject:
   - component: {fileID: 6289392385320055864}
   - component: {fileID: 6289392385320055860}
   - component: {fileID: 6289392385320055861}
+  - component: {fileID: 4165708947355094201}
+  - component: {fileID: 3266188114190132887}
+  - component: {fileID: 5891089339891235483}
+  - component: {fileID: 777250486608297420}
+  - component: {fileID: 8459195675703892528}
   m_Layer: 0
   m_Name: PROTECTOR
-  m_TagString: Untagged
+  m_TagString: PROTECTOR
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -181,6 +186,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf146531ad8fe58438ac71d67e41460f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  freeOrb_Tag: FREE_ORB
+  claimedOrb_Tag: CARRIED_ORB
+  storeOrb_Tag: STORED_ORB
+  marauder_Tag: MARAUDER
+  marauderCaught_Tag: MARAUDER_CAUGHT
   orbDetectionRadius: 200
   orbReachedRadius: 2
   deliveryPointReachedRadius: 3
@@ -188,3 +198,84 @@ MonoBehaviour:
   marauderDetectionRadius: 100
   marauderReachedRadius: 3
   lookAheadDistance: 15
+  baseWayPoints_Arr: []
+  killingWayPoints_Arr: []
+--- !u!114 &4165708947355094201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6289392385320055868}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8be20b5181597db44b515948dd3993c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wanderPoints_Ar: []
+  currentState: 0
+  currentTarget: {fileID: 0}
+--- !u!114 &3266188114190132887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6289392385320055868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08720745af11d449a83137325d9d4ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentState: 0
+  currentTarget: {fileID: 0}
+  surrogateTarget: {fileID: 0}
+  distanceAhead: 20
+  repathTime: 0.2
+--- !u!114 &5891089339891235483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6289392385320055868}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f897f81177035469785d2c872c18bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationalPolicy: 1
+  wayPointReachedRadius: 2
+  currentWaypointIndex: 0
+--- !u!114 &777250486608297420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6289392385320055868}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b84dd37a841a14d47a8f2187694c318a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentState: 0
+  target: {fileID: 0}
+  targetReachedRadius: 4
+  wayPointReachedRadius: 2
+  repathTime: 0
+--- !u!114 &8459195675703892528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6289392385320055868}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1025606d3f44a34fa41ede54bff2889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationalPolicy: 1
+  maxPredictionTime: 3
+  target: {fileID: 0}

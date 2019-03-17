@@ -16,6 +16,8 @@ public class MARAUDER_BLACKBOARD : MonoBehaviour
     public string bearerWithoutOrbe;
     public string bearerWithoutOrbe_Tag;
 
+    public float vanishTime = 3;
+
     [Header("Control")]
     public float bearerDetectionRadius = 100;
     public float bearerReachedRadius = 6;

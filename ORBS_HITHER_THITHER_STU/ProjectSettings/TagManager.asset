@@ -19,6 +19,7 @@ TagManager:
   - MARAUDER
   - MARAUDER_KILLING
   - MARAUDER_CAUGHT
+  - PROTECTOR
   layers:
   - Default
   - TransparentFX

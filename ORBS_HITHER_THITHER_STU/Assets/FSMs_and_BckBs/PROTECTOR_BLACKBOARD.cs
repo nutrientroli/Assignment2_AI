@@ -8,6 +8,7 @@ public class PROTECTOR_BLACKBOARD : MonoBehaviour
     public string claimedOrb_Tag;
     public string storeOrb_Tag;
     public string marauder_Tag;
+    public string marauderCaught_Tag;
 
     [Header("Control")]
     public float orbDetectionRadius = 200;
@@ -20,6 +21,7 @@ public class PROTECTOR_BLACKBOARD : MonoBehaviour
 
     [Header("Waypoint Arrays")]
     public GameObject[] baseWayPoints_Arr;
+    public GameObject[] killingWayPoints_Arr;
 
 
     void Awake()
@@ -41,15 +43,33 @@ public class PROTECTOR_BLACKBOARD : MonoBehaviour
         orb.transform.position = (Vector3)node.position;
     }
 
+    public void DropMarauder(GameObject marauder)
+    {
+        marauder.transform.parent = null;
+        GraphNode node = AstarPath.active.GetNearest(marauder.transform.position, NNConstraint.Default).node;
+        marauder.transform.position = (Vector3)node.position;
+    }
+
     public void GrabOrb(GameObject _orb, Transform _parentObject)
     {
         _orb.transform.parent = _parentObject;
         _orb.tag = claimedOrb_Tag;
     }
 
+    public void GrabMarauder(GameObject _marauder, Transform _parentObject)
+    {
+        _marauder.transform.parent = _parentObject;
+        _marauder.tag = marauderCaught_Tag;
+    }
+
     public GameObject GetRandomBasePoint()
     {
         return GetRandomObjectOfArray(baseWayPoints_Arr);
+    }
+
+    public GameObject GetRandomKillingPoint()
+    {
+        return GetRandomObjectOfArray(killingWayPoints_Arr);
     }
 
     private GameObject GetRandomObjectOfArray(GameObject[] _inputArray)
