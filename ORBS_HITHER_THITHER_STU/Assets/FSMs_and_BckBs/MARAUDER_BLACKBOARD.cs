@@ -48,6 +48,8 @@ public class MARAUDER_BLACKBOARD : MonoBehaviour
         else
             orb.tag = "FREE_ORB";
 
+        Debug.LogError( this.gameObject.name + " " + orb.transform.tag);
+
         GraphNode node = AstarPath.active.GetNearest(orb.transform.position, NNConstraint.Default).node;
         orb.transform.position = (Vector3)node.position;
     }

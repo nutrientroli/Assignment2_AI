@@ -161,7 +161,7 @@ public class FSM_MARAUDER : FiniteStateMachine
             case (State.DYING):
                 if (elapsedTime >= blackboard.vanishTime)
                 {
-                    if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
+                    // if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
                     Destroy(gameObject);
                     break;
                 }
@@ -220,6 +220,8 @@ public class FSM_MARAUDER : FiniteStateMachine
                 routeExecutor.ReEnter();
                 break;
             case (State.DYING):
+                if (orbe_obj != null) blackboard.DropOrb(orbe_obj, false);
+
                 elapsedTime = 0f;
                 break;
         }
